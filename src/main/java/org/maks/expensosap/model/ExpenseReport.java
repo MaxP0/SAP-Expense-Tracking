@@ -1,5 +1,6 @@
 package org.maks.expensosap.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,5 +34,6 @@ public class ExpenseReport {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ExpenseItem> items;
 }

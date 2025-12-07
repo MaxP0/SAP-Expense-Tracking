@@ -1,5 +1,6 @@
 package org.maks.expensosap.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,7 @@ public class ExpenseItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "report_id")
+    @JsonBackReference
     private ExpenseReport report;
 }
 
