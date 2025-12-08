@@ -28,13 +28,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(err, status);
     }
 
-    // 1. RuntimeException — почти все наши ошибки
+    // most of errors end up here
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiErrorDTO> handleRuntime(RuntimeException ex, WebRequest req) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
-    // 2. Default fallback — если что-то не поймали
+    // if something slipped through and wasn't caught
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorDTO> handleDefault(Exception ex, WebRequest req) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", req);
