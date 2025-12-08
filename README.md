@@ -23,6 +23,7 @@ spring.jpa.hibernate.ddl-auto=update
 
 ## Running the Application
 
+1. Start the backend:
 ```
 mvn clean install
 mvn spring-boot:run
@@ -33,6 +34,8 @@ Server runs on:
 ```
 http://localhost:8080
 ```
+2. Open frontend/login.html manually in your browser.
+   There is no build step- the UI is fully static and communicates with the backend using fetch().
 
 ---
 

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Login</h2>
+
+    <input id="username" placeholder="Username" />
+    <input id="password" placeholder="Password" type="password" />
+
+    <button onclick="login()">Login</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+    function login() {
+        const u = document.getElementById("username").value;
+        const p = document.getElementById("password").value;
+
+        fetch("http://localhost:8080/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.id) {
+                    localStorage.setItem("userId", data.id);
+                    localStorage.setItem("role", data.role);
+                    window.location = "create-report.html";
+                } else {
+                    document.getElementById("msg").innerText = "Login failed";
+                }
+            });
+    }
+</script>
+</body>
+</html>

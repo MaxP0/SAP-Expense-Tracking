@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Report</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Create Expense Report</h2>
+
+    <input id="title" placeholder="Report title" />
+
+    <h3>Add items</h3>
+    <div id="items"></div>
+
+    <button onclick="addItem()">Add Item</button><br><br>
+    <button onclick="submitReport()">Submit Report</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+    function addItem() {
+        const box = document.createElement("div");
+        box.className = "item-box";
+        box.innerHTML = `
+<input placeholder="Category" class="cat" />
+<input placeholder="Description" class="desc" />
+<input placeholder="Amount" type="number" class="amt" />
+`;
+        document.getElementById("items").appendChild(box);
+    }
+
+    function submitReport() {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return alert("Not logged in");
+
+        const title = document.getElementById("title").value;
+        const itemsDivs = document.querySelectorAll(".item-box");
+
+        const items = [];
+        itemsDivs.forEach(div => {
+            items.push({
+                category: div.querySelector(".cat").value,
+                description: div.querySelector(".desc").value,
+                amount: Number(div.querySelector(".amt").value)
+            });
+        });
+
+        fetch(`http://localhost:8080/reports/create/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, items })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.id) {
+                    localStorage.setItem("lastReportId", data.id);
+                    window.location = "view-report.html";
+                } else {
+                    document.getElementById("msg").innerText = "Error creating report";
+                }
+            });
+    }
+</script>
+</body>
+</html>

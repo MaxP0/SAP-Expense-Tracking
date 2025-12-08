@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Report</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h2>View Report</h2>
+
+    <div id="report"></div>
+
+    <button onclick="approve()">Approve</button>
+    <button onclick="reject()">Reject</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+    const reportId = localStorage.getItem("lastReportId");
+    const role = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId");
+
+    function load() {
+        fetch(`http://localhost:8080/reports/${reportId}`)
+            .then(r => r.json())
+            .then(data => {
+                let html = `<b>Title:</b> ${data.title}<br>
+<b>Status:</b> ${data.status}<br>
+<b>Total:</b> ${data.totalAmount}<br><br>
+<b>Items:</b><br>`;
+
+                data.items.forEach(it => {
+                    html += `- ${it.category}: ${it.description} (${it.amount})<br>`;
+                });
+
+                document.getElementById("report").innerHTML = html;
+            });
+    }
+
+    function approve() {
+        if (role !== "manager") return alert("Only managers can approve");
+
+        fetch(`http://localhost:8080/reports/${reportId}/action/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "approve", comment: "OK" })
+        })
+            .then(r => r.json())
+            .then(x => load());
+    }
+
+    function reject() {
+        if (role !== "manager") return alert("Only managers can reject");
+
+        fetch(`http://localhost:8080/reports/${reportId}/action/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "reject", comment: "Not ok" })
+        })
+            .then(r => r.json())
+            .then(x => load());
+    }
+
+    load();
+</script>
+</body>
+</html>
