@@ -19,6 +19,11 @@ spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
 ```
 
+On Windows machine change following:
+```
+spring.datasource.url=jdbc:mysql://host.docker.internal:3306/expense_db
+```
+
 ---
 
 ## Running the Application
