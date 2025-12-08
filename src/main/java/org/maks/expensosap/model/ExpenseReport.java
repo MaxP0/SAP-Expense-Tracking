@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,5 +36,5 @@ public class ExpenseReport {
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<ExpenseItem> items;
+    private List<ExpenseItem> items = new ArrayList<>();
 }

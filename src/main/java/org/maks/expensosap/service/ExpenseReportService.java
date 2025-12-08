@@ -117,7 +117,8 @@ public class ExpenseReportService {
         dto.setEmployee(toUserShortDTO(report.getEmployee()));
 
         dto.setItems(
-                report.getItems().stream()
+                (report.getItems() == null ? List.<ExpenseItem>of() : report.getItems())
+                        .stream()
                         .map(this::toItemDTO)
                         .toList()
         );
