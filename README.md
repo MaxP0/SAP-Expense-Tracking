@@ -44,6 +44,125 @@ http://localhost:8080
 
 ---
 
+## Insecure Mode Vulnerabilities
+
+The `insecure` branch intentionally contains multiple vulnerabilities.
+
+---
+
+### Stored XSS
+
+User input is rendered directly in the UI without sanitization.
+
+**Payload example:**
+
+```html
+<img src=x onerror=alert('stored-xss')>
+```
+
+Open:
+
+```
+view-report.html
+```
+
+Alert will execute.
+
+---
+
+### Reflected XSS
+
+Unescaped input is returned directly in the response.
+
+**Example:**
+
+```
+GET /insecure/echo?text=<img src=x onerror=alert('reflected')>
+```
+
+Triggers immediately.
+
+---
+
+### SQL Injection
+
+The insecure login endpoint concatenates raw SQL.
+
+**Exploit:**
+
+```json
+POST /auth/login-insecure
+{
+  "username": "admin' OR '1'='1",
+  "password": "test"
+}
+```
+
+Bypasses authentication.
+
+---
+
+### Sensitive Data Exposure
+
+Passwords and raw request data are logged in plaintext.
+
+**Example log entry:**
+
+```
+event=login_raw, meta=username=maks, password=123
+```
+
+---
+
+### Broken Access Control
+
+Any authenticated user can approve or reject reports.
+
+```
+POST /reports/{id}/action/{userId}
+```
+
+No role checks performed.
+
+---
+
+### Missing Input Validation
+
+No validation on:
+
+* report fields
+* credentials
+* numeric values
+* description/title content
+
+Allows malformed/malicious payloads.
+
+---
+
+### Missing Security Headers
+
+Security headers intentionally disabled:
+
+```
+Content-Security-Policy
+X-Frame-Options
+X-Content-Type-Options
+```
+
+---
+
+### Logging of Sensitive Data
+
+The application logs raw credentials during register/login operations.
+
+Example insecure logging call:
+
+```
+loggingService.log("login_raw", null, "username=maks, password=123");
+```
+
+Stored in DB as-is.
+
 ## Authentication API
 
 ### Register
