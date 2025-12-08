@@ -1,7 +1,6 @@
 package org.maks.expensosap.service;
 
-import org.maks.expensosap.dto.CreateExpenseReportDTO;
-import org.maks.expensosap.dto.ReportActionDTO;
+import org.maks.expensosap.dto.*;
 import org.maks.expensosap.model.ExpenseItem;
 import org.maks.expensosap.model.ExpenseReport;
 import org.maks.expensosap.model.User;
@@ -12,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +22,8 @@ public class ExpenseReportService {
     private final UserRepository userRepo;
     private final LoggingService loggingService;
 
-    public ExpenseReport createReport(Long userId, CreateExpenseReportDTO dto) {
-        User user = userRepo.findById(userId).orElseThrow();
+    public ReportResponseDTO createReport(Long userId, CreateExpenseReportDTO dto) {
+        User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         ExpenseReport report = ExpenseReport.builder()
                 .title(dto.getTitle())
@@ -33,48 +33,96 @@ public class ExpenseReportService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        reportRepo.save(report);
+        report = reportRepo.save(report);
 
         double total = 0;
-        for (var it : dto.getItems()) {
-            ExpenseItem item = ExpenseItem.builder()
-                    .report(report)
-                    .category(it.getCategory())
-                    .description(it.getDescription())
-                    .amount(it.getAmount())
-                    .build();
+        if (dto.getItems() != null) {
+            for (var it : dto.getItems()) {
+                ExpenseItem item = ExpenseItem.builder()
+                        .report(report)
+                        .category(it.getCategory())
+                        .description(it.getDescription())
+                        .amount(it.getAmount())
+                        .build();
+                itemRepo.save(item);
 
-            total += it.getAmount();
-            itemRepo.save(item);
+                total += it.getAmount();
+            }
         }
 
         report.setTotalAmount(total);
-        reportRepo.save(report);
+        report = reportRepo.save(report);
 
         loggingService.log("report_created", userId, dto);
 
-        return report;
+        return toReportDTO(report);
     }
 
-    public ExpenseReport getById(Long id) {
-        return reportRepo.findById(id).orElseThrow();
+    public ReportResponseDTO getById(Long id) {
+        ExpenseReport r = reportRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+        return toReportDTO(r);
     }
 
-    public java.util.List<ExpenseReport> getPending() {
-        return reportRepo.findByStatus("submitted");
+    public List<ReportResponseDTO> getPending() {
+        return reportRepo.findByStatus("submitted")
+                .stream()
+                .map(this::toReportDTO)
+                .toList();
     }
 
-    public ExpenseReport applyAction(Long managerId, Long reportId, ReportActionDTO action) {
-        ExpenseReport report = reportRepo.findById(reportId).orElseThrow();
+    public ReportResponseDTO applyAction(Long managerId, Long reportId, ReportActionDTO action) {
+        ExpenseReport report = reportRepo.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Report not found"));
 
-        String newStatus = action.getAction().equals("approve") ? "approved" : "rejected";
-        report.setStatus(newStatus);
+        String act = action.getAction();
+        if ("approve".equalsIgnoreCase(act)) {
+            report.setStatus("approved");
+        } else if ("reject".equalsIgnoreCase(act)) {
+            report.setStatus("rejected");
+        } else {
+            throw new RuntimeException("Unknown action");
+        }
 
-        reportRepo.save(report);
+        report = reportRepo.save(report);
+        loggingService.log("report_" + report.getStatus(), managerId, action);
 
-        loggingService.log("report_" + newStatus, managerId, action);
+        return toReportDTO(report);
+    }
 
-        return report;
+    private UserShortDTO toUserShortDTO(org.maks.expensosap.model.User user) {
+        UserShortDTO dto = new UserShortDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setRole(user.getRole());
+        return dto;
+    }
+
+    private ItemResponseDTO toItemDTO(org.maks.expensosap.model.ExpenseItem item) {
+        ItemResponseDTO dto = new ItemResponseDTO();
+        dto.setId(item.getId());
+        dto.setCategory(item.getCategory());
+        dto.setDescription(item.getDescription());
+        dto.setAmount(item.getAmount());
+        return dto;
+    }
+
+    private ReportResponseDTO toReportDTO(org.maks.expensosap.model.ExpenseReport report) {
+        ReportResponseDTO dto = new ReportResponseDTO();
+        dto.setId(report.getId());
+        dto.setTitle(report.getTitle());
+        dto.setStatus(report.getStatus());
+        dto.setTotalAmount(report.getTotalAmount());
+        dto.setCreatedAt(report.getCreatedAt());
+        dto.setEmployee(toUserShortDTO(report.getEmployee()));
+
+        dto.setItems(
+                report.getItems().stream()
+                        .map(this::toItemDTO)
+                        .toList()
+        );
+
+        return dto;
     }
 }
 
