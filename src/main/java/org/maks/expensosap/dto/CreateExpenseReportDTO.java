@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import jakarta.validation.Valid;
 
 @Data
 public class CreateExpenseReportDTO {
@@ -14,6 +15,7 @@ public class CreateExpenseReportDTO {
     private String title;
 
     @NotEmpty(message = "Report must contain at least one item")
+    @Valid
     private List<CreateExpenseItemDTO> items;
 }
 
