@@ -3,11 +3,13 @@ package org.maks.expensosap.exception;
 import org.maks.expensosap.dto.ApiErrorDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -26,6 +28,18 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(err, status);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorDTO> handleValidation(MethodArgumentNotValidException ex, WebRequest req) {
+
+        String msg = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        return buildError(HttpStatus.BAD_REQUEST, msg, req);
     }
 
     // most of errors end up here

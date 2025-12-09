@@ -1,5 +1,6 @@
 package org.maks.expensosap.controller;
 
+import jakarta.validation.Valid;
 import org.maks.expensosap.dto.CreateExpenseReportDTO;
 import org.maks.expensosap.dto.ReportActionDTO;
 import org.maks.expensosap.dto.ReportResponseDTO;
@@ -20,7 +21,7 @@ public class ReportController {
     @PostMapping("/create/{userId}")
     public ResponseEntity<ReportResponseDTO> create(
             @PathVariable Long userId,
-            @RequestBody CreateExpenseReportDTO dto
+            @Valid @RequestBody CreateExpenseReportDTO dto
     ) {
         return ResponseEntity.ok(service.createReport(userId, dto));
     }
