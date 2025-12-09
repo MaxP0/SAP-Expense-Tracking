@@ -41,6 +41,14 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error","invalid"));
         }
 
-        return ResponseEntity.ok(result.get(0)); // raw DB row
+        Object[] row = (Object[]) result.get(0);
+
+        return ResponseEntity.ok(Map.of(
+                "id", row[0],
+                "username", row[1],
+                "password", row[2],
+                "role", row[3]
+        ));
+
     }
 }

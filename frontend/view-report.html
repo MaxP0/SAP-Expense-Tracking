@@ -39,8 +39,6 @@
     }
 
     function approve() {
-        if (role !== "manager") return alert("Only managers can approve");
-
         fetch(`http://localhost:8080/reports/${reportId}/action/${userId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -51,8 +49,6 @@
     }
 
     function reject() {
-        if (role !== "manager") return alert("Only managers can reject");
-
         fetch(`http://localhost:8080/reports/${reportId}/action/${userId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
