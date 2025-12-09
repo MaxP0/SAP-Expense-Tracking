@@ -18,15 +18,14 @@ public class AuthController {
     private EntityManager em;
 
     @Autowired
-    private LoggingService loggingService; // simple injection
+    private LoggingService loggingService;
 
-    @PostMapping("/login-insecure")
-    public ResponseEntity<?> loginInsecure(@RequestBody Map<String,String> body) {
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String,String> body) {
 
         String username = body.get("username");
         String password = body.get("password");
 
-        // yeah, this logs raw creds. insecure on purpose.
         loggingService.log(
                 "login_insecure_raw",
                 null,
@@ -42,7 +41,6 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error","invalid"));
         }
 
-        // raw SQL result, includes password
-        return ResponseEntity.ok(result.get(0));
+        return ResponseEntity.ok(result.get(0)); // raw DB row
     }
 }
