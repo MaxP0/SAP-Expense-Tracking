@@ -1,5 +1,6 @@
 package org.maks.expensosap.controller;
 
+import org.maks.expensosap.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.maks.expensosap.model.User;
 import org.maks.expensosap.repository.UserRepository;
@@ -16,6 +17,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final LoggingService loggingService;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
@@ -23,28 +25,22 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Username exists");
         }
 
-        // no raw password in logs
         loggingService.log(
                 "register",
                 null,
                 "username=" + user.getUsername()
         );
 
-        String hashed = passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashed);
-
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+
         return ResponseEntity.ok("Registered");
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User creds) {
 
-        loggingService.log(
-                "login_attempt",
-                null,
-                "username=" + creds.getUsername()
-        );
+        loggingService.log("login_attempt", null, "username=" + creds.getUsername());
 
         User user = userRepository.findByUsername(creds.getUsername());
         if (user == null) {
@@ -55,9 +51,7 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
 
-        // small step towards secure: now it doesnt return password
-        user.setPassword(null);
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userMapper.toDTO(user));
     }
+
 }
