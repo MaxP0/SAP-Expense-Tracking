@@ -39,8 +39,15 @@ Server runs on:
 ```
 http://localhost:8080
 ```
-2. Open frontend/login.html manually in your browser.
-   There is no build step- the UI is fully static and communicates with the backend using fetch().
+2. There are two options to run frontend: 
+Open frontend/login.html manually in your browser.
+Or
+start python simple server 
+```
+cd frontend
+python -m http.server 3000
+```
+   
 
 ---
 
