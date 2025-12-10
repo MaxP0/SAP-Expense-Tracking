@@ -1,44 +1,54 @@
 package org.maks.expensosap.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.maks.expensosap.model.User;
-import org.maks.expensosap.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.maks.expensosap.service.LoggingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final LoggingService loggingService;
+    @PersistenceContext
+    private EntityManager em;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        loggingService.log(
-                "register_raw",
-                null,
-                "username=" + user.getUsername() + ", password=" + user.getPassword()
-        );
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            return ResponseEntity.badRequest().body("Username exists");
-        }
-        userRepository.save(user);
-        return ResponseEntity.ok("Registered");
-    }
+    @Autowired
+    private LoggingService loggingService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User creds) {
+    public ResponseEntity<?> login(@RequestBody Map<String,String> body) {
+
+        String username = body.get("username");
+        String password = body.get("password");
+
         loggingService.log(
-                "login_raw",
+                "login_insecure_raw",
                 null,
-                "username=" + creds.getUsername() + ", password=" + creds.getPassword()
+                "username=" + username + ", password=" + password
         );
-        User user = userRepository.findByUsernameAndPassword(creds.getUsername(), creds.getPassword());
-        if (user == null) return ResponseEntity.status(401).body("Invalid credentials");
-        // Not secure yet — just return the user object, no session. Add JWT/session later.
-        return ResponseEntity.ok(user);
+
+        String sql = "SELECT id, username, password, role FROM users WHERE username = '"
+                + username + "' AND password = '" + password + "'";
+
+        List<?> result = em.createNativeQuery(sql).getResultList();
+
+        if (result.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("error","invalid"));
+        }
+
+        Object[] row = (Object[]) result.get(0);
+
+        return ResponseEntity.ok(Map.of(
+                "id", row[0],
+                "username", row[1],
+                "password", row[2],
+                "role", row[3]
+        ));
+
     }
 }

