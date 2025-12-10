@@ -25,16 +25,30 @@
         fetch(`http://localhost:8080/reports/${reportId}`)
             .then(r => r.json())
             .then(data => {
-                let html = `<b>Title:</b> ${data.title}<br>
-<b>Status:</b> ${data.status}<br>
-<b>Total:</b> ${data.totalAmount}<br><br>
-<b>Items:</b><br>`;
+                const div = document.getElementById("report");
+                div.innerHTML = "";
+
+                const title = document.createElement("p");
+                title.textContent = "Title: " + data.title;
+                div.appendChild(title);
+
+                const status = document.createElement("p");
+                status.textContent = "Status: " + data.status;
+                div.appendChild(status);
+
+                const total = document.createElement("p");
+                total.textContent = "Total: " + data.totalAmount;
+                div.appendChild(total);
+
+                const itemsHeader = document.createElement("p");
+                itemsHeader.textContent = "Items:";
+                div.appendChild(itemsHeader);
 
                 data.items.forEach(it => {
-                    html += `- ${it.category}: ${it.description} (${it.amount})<br>`;
+                    const p = document.createElement("p");
+                    p.textContent = `- ${it.category}: ${it.description} (${it.amount})`;
+                    div.appendChild(p);
                 });
-
-                document.getElementById("report").innerHTML = html;
             });
     }
 

@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Report</title>
+    <title>Create Report (Secure)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-    <h2>Create Expense Report</h2>
+
+    <h2>Create Expense Report (Secure)</h2>
+    <p style="color:red;font-weight:bold;">SECURE CREATE ACTIVE — NO INNERHTML</p>
 
     <input id="title" placeholder="Report title" />
 
@@ -23,11 +25,27 @@
     function addItem() {
         const box = document.createElement("div");
         box.className = "item-box";
-        box.innerHTML = `
-<input placeholder="Category" class="cat" />
-<input placeholder="Description" class="desc" />
-<input placeholder="Amount" type="number" class="amt" />
-`;
+
+        // category
+        const cat = document.createElement("input");
+        cat.placeholder = "Category";
+        cat.className = "cat";
+
+        // description
+        const desc = document.createElement("input");
+        desc.placeholder = "Description";
+        desc.className = "desc";
+
+        // amount
+        const amt = document.createElement("input");
+        amt.placeholder = "Amount";
+        amt.type = "number";
+        amt.className = "amt";
+
+        box.appendChild(cat);
+        box.appendChild(desc);
+        box.appendChild(amt);
+
         document.getElementById("items").appendChild(box);
     }
 
@@ -58,10 +76,12 @@
                     localStorage.setItem("lastReportId", data.id);
                     window.location = "view-report.html";
                 } else {
-                    document.getElementById("msg").innerText = "Error creating report";
+                    const msg = document.getElementById("msg");
+                    msg.textContent = "Error creating report"; // SAFE
                 }
             });
     }
 </script>
+
 </body>
 </html>
